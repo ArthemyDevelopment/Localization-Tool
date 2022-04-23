@@ -1,0 +1,32 @@
+{
+    "LI_Items": [
+        {
+            "key": "Menu_Title",
+            "value": "Escena de ejemplo"
+        },
+        {
+            "key": "Menu_Img",
+            "value": "ArthemyDevelopment/ExampleImage_ES"
+        },
+        {
+            "key": "Menu_Start",
+            "value": "Comenzar"
+        },
+        {
+            "key": "Menu_Continue",
+            "value": "Continuar"
+        },
+        {
+            "key": "Menu_Options",
+            "value": "Opciones"
+        },
+        {
+            "key": "Menu_Credits",
+            "value": "Creditos"
+        },
+        {
+            "key": "Menu_Copyright",
+            "value": "Copyright ArthemyDevelopment 2021"
+        }
+    ]
+}
