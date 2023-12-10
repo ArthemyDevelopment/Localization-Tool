@@ -6,14 +6,37 @@ using UnityEditorInternal;
 using UnityEditor.AnimatedValues;
 using System.IO;
 using System;
+using TMPro;
+
 
 namespace ArthemyDevelopment.Localization
 {
     public class LocalizationEditor : EditorWindow
     {
 		
-		public LocalizationData localizationData;
+		public LocalizationData localizationData= new LocalizationData();
 
+
+		public static LocalizationEditor instance;
+
+		public static void AddElementToLocalizationData()
+		{
+			
+			for (int i = 0; i < LocalizationEditor.instance.localizationData.LI_Items.Length; i++)
+			{
+				LocalizationEditor.instance.localizationData.LI_Items[i].value.Add("");
+			}
+		}
+		
+		public static void RemoveElementToLocalizationData()
+		{
+			
+			for (int i = 0; i < LocalizationEditor.instance.localizationData.LI_Items.Length; i++)
+			{
+				LocalizationEditor.instance.localizationData.LI_Items[i].value.RemoveAt(LocalizationEditor.instance.localizationData.LI_Items[i].value.Count-1);
+			}
+		}
+		
 		bool B_FileExist;
 		bool B_isFiles = true;
 		bool B_isDataManag = true;
@@ -23,7 +46,7 @@ namespace ArthemyDevelopment.Localization
 
 		[SerializeField] int CustomTriggerIndex;
 
-		AnimBool fileAnimBool = new AnimBool();
+		AnimBool fileAnimBool = new AnimBool(true);
 		AnimBool objetcAnimBool = new AnimBool();
 
 		GUIStyle foldoutStyle = null;
@@ -43,8 +66,10 @@ namespace ArthemyDevelopment.Localization
 
 		SerializedObject serializedObject;
 
+		
+		
 		public FileTypes FileFormat;
-        [MenuItem("ArthemyDevelopment/LocalizationTool/EditorTool")]
+        [MenuItem("Tools/ArthemyDevelopment/LocalizationTool/EditorTool")]
         static void Init()
 		{
 			EditorWindow window = GetWindow(typeof(LocalizationEditor), false, "Localization Tool", true);
@@ -57,6 +82,7 @@ namespace ArthemyDevelopment.Localization
 		private void Awake()
 		{
 			scrollWindow = GetWindow(typeof(LocalizationEditor));
+			instance = this;
 		}
 
 		public void OnGUI()
@@ -143,13 +169,13 @@ namespace ArthemyDevelopment.Localization
 
 								break;
 
-							case FileTypes.Strings:
+							/*case FileTypes.Strings:
 								if (GUILayout.Button("Load Language Data"))
 								{
 									LoadStringData();
 								}
 					
-								break;
+								break;*/
 
 							case FileTypes.CSV:
 								if (GUILayout.Button("Load Language Data"))
@@ -181,15 +207,19 @@ namespace ArthemyDevelopment.Localization
 						{
 							EditorGUILayout.Space(5);
 							SerializedProperty dataField = serializedObject.FindProperty("localizationData");
-							EditorGUILayout.PropertyField(dataField, true);
+							EditorGUILayout.PropertyField(dataField, true );
 
 							EditorGUILayout.BeginHorizontal();
 							switch (FileFormat)
 							{
 								case FileTypes.Json:
-									if (GUILayout.Button("Clear Language Values"))
+									if (GUILayout.Button("Add New Language"))
 									{
-										ClearDataValues();
+										AddElementToLocalizationData();
+									}
+									if (GUILayout.Button("Remove Last Language"))
+									{
+										RemoveElementToLocalizationData();
 									}
 									if (localizationData != null)
 									{
@@ -201,7 +231,7 @@ namespace ArthemyDevelopment.Localization
 
 									break;
 
-								case FileTypes.Strings:
+								/*case FileTypes.Strings:
 									if (GUILayout.Button("Clear Language Values"))
 									{
 										ClearDataValues();
@@ -213,12 +243,16 @@ namespace ArthemyDevelopment.Localization
 											SaveStringData();
 										}
 									}
-									break;
+									break;*/
 
 								case FileTypes.CSV:
-									if (GUILayout.Button("Clear Language Values"))
+									if (GUILayout.Button("Add New Language"))
 									{
-										ClearDataValues();
+										AddElementToLocalizationData();
+									}
+									if (GUILayout.Button("Remove Last Language"))
+									{
+										RemoveElementToLocalizationData();
 									}
 									if (localizationData != null)
 									{
@@ -443,7 +477,7 @@ namespace ArthemyDevelopment.Localization
 			}
 		}
 
-		void LoadStringData()
+		/*void LoadStringData()
 		{
 			string filePath = EditorUtility.OpenFilePanel("Select your localization file", Application.streamingAssetsPath, "strings");
 
@@ -461,8 +495,21 @@ namespace ArthemyDevelopment.Localization
 					{
 						string[] data = file.Split('"');
 						LocalizationItem item = new LocalizationItem();
+						for (int i = 0; i < data.Length; i++)
+						{
+							if(i==0) continue;
+							if (i == 1)
+							{
+								item.key = data[1];
+								continue;
+							}
+							if(i%2!=0)
+								item.value.Add(data[i]);
+						}
+						/*
 						item.key = data[1];
 						item.value = data[3];
+						#1#
 						localizedText.Add(item);
 					}
 				}
@@ -484,15 +531,25 @@ namespace ArthemyDevelopment.Localization
 			{
 				using (StreamWriter file = new StreamWriter(filePath))
 				{
+					string text ="";
 					foreach (LocalizationItem item in localizationData.LI_Items)
-					{						
-						file.WriteLine(string.Format("\"{0}\" = \"{1}\";", item.key, item.value));
+					{				
+						text="";
+						text += string.Format("\"{0}\" = ", item.key);
+						for (int i = 0; i < item.value.Count; i++)
+						{
+							text += string.Format("\"{0}\" = ", item.value[i]);
+						}
+						
+						/*file.WriteLine(string.Format("\"{0}\" = \"{1}\";", item.key, item.value));#1#
+						file.WriteLine(text);
 					}
+					
 					file.Close();
 				}
 				
 			}
-		}
+		}*/
 
 		void LoadCSVData()
 		{
@@ -512,8 +569,19 @@ namespace ArthemyDevelopment.Localization
 					{
 						string[] data = lines[i].Split(';');
 						LocalizationItem tempItem = new LocalizationItem();
-						tempItem.key = data[0];
-						tempItem.value = data[1];
+						
+						for (int j = 0; j < data.Length; j++)
+						{
+							if (j == 0)
+							{
+								tempItem.key = data[j];
+								continue;
+							}
+							tempItem.value.Add(data[j]);
+							
+						}
+						/*tempItem.key = data[0];
+						tempItem.value = data[1];*/
 						localizedText.Add(tempItem);
 					}
 
@@ -535,9 +603,19 @@ namespace ArthemyDevelopment.Localization
 			{
 				using (StreamWriter file = new StreamWriter(filePath))
 				{
+					string text ="";
 					foreach (LocalizationItem item in localizationData.LI_Items)
-					{
-						file.WriteLine(string.Format("{0};{1}", item.key, item.value));
+					{				
+						text="";
+						text += string.Format("{0}", item.key);
+						for (int i = 0; i < item.value.Count; i++)
+						{
+							text += string.Format(";{0}", item.value[i]);
+						}
+						
+						
+						/*file.WriteLine(string.Format("{0};{1}", item.key, item.value));*/
+						file.WriteLine(text);
 					}
 					file.Close();
 
@@ -552,7 +630,8 @@ namespace ArthemyDevelopment.Localization
 		{
 			B_FileExist = true;
 			localizationData = new LocalizationData();
-			localizationData.LI_Items = new LocalizationItem[0];
+			localizationData.LI_Items = new LocalizationItem[1];
+			//localizationData.LI_Items[0].value = new List<string> { "" };
 			B_updateKeysList = true;
 		}
 
@@ -563,7 +642,10 @@ namespace ArthemyDevelopment.Localization
 				if(localizationData != null && localizationData.LI_Items != null)
 					foreach (LocalizationItem item in localizationData.LI_Items)
 					{
-						item.value = "";
+						for (int i = 0; i < item.value.Count; i++)
+						{
+							item.value[i] = "";
+						}
 					}
 
 			}
@@ -631,19 +713,55 @@ namespace ArthemyDevelopment.Localization
 		{
 			EditorGUI.BeginProperty(position, label, property);
 
-
-			Rect keyRect = new Rect(position.x + 30, position.y, ((EditorGUIUtility.currentViewWidth - 90)/3) - 10, position.height);
-			Rect labelRect = new Rect(position.x + ((EditorGUIUtility.currentViewWidth - 90) / 3) +30, position.y, 60, position.height);
-			Rect valueRect = new Rect(position.x + ((EditorGUIUtility.currentViewWidth - 90) / 3) + 75, position.y, (((EditorGUIUtility.currentViewWidth - 90) / 3)*2f)-75, position.height);
+			SerializedProperty values = property.FindPropertyRelative("value");
 
 			EditorGUI.LabelField(position, "Key ");
+			Rect keyRect = new Rect(position.x + 30, position.y, ((EditorGUIUtility.currentViewWidth - 110)/6) - 10, position.height);
 			EditorGUI.PropertyField(keyRect, property.FindPropertyRelative("key"), GUIContent.none);
+			Rect labelRect = new Rect(position.x + ((EditorGUIUtility.currentViewWidth - 110) / 6) +25, position.y, 40, position.height);
 			EditorGUI.LabelField(labelRect, "Value ");
-			EditorGUI.PropertyField(valueRect, property.FindPropertyRelative("value"), GUIContent.none);
+			float width = ((((EditorGUIUtility.currentViewWidth - 90) / 6) * 5f) - 60-2*values.arraySize) / values.arraySize;
+			for (int i = 0; i < values.arraySize; i++)
+			{
+				Rect valueRect = new Rect(position.x + ((EditorGUIUtility.currentViewWidth - 110) / 6) + 65+ (width*i)+(2*i), position.y, width, position.height);	
+				EditorGUI.PropertyField(valueRect, values.GetArrayElementAtIndex(i), GUIContent.none);	
+			}
+			
 
+			/*Rect buttonRect = new Rect(position.x + EditorGUIUtility.currentViewWidth - 130, position.y, 20, position.height);
+			Rect restButtonRect = new Rect(position.x + EditorGUIUtility.currentViewWidth - 110, position.y, 20, position.height);
+	
+			if (GUI.Button(buttonRect, "+"))
+			{
+				LocalizationEditor.AddElementToLocalizationData();
+			}
+			if (GUI.Button(restButtonRect, "-"))
+			{
+				LocalizationEditor.RemoveElementToLocalizationData();
+			}*/
 			EditorGUI.EndProperty();
 		}
 	}
+
+	/*[CustomPropertyDrawer(typeof(LocalizationData))]
+	public class LocalizationDataDrawer : PropertyDrawer
+	{
+		public override void OnGUI(Rect position, SerializedProperty property, GUIContent label)
+		{
+			EditorGUI.LabelField(position, "Texts list");
+			SerializedProperty items = property.FindPropertyRelative("LI_Items");
+			Rect arrayRect = new Rect(position.x, position.y + 15, EditorGUIUtility.currentViewWidth - 10,
+				position.height);
+			EditorGUI.PropertyField(arrayRect, items);
+			EditorGUI.indentLevel++;
+ 
+			for (int i = 0; i < items.intValue; i++)
+			{                EditorGUILayout.PropertyField(property.GetArrayElementAtIndex(i));
+			}
+ 
+			EditorGUI.indentLevel--;
+		}
+	}*/
 	
 	[Serializable]
 	public class KeyData

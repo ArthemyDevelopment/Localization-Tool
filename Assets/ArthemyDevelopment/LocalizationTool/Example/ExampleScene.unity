@@ -301,6 +301,7 @@ MonoBehaviour:
   m_Name: 
   m_EditorClassIdentifier: 
   LM: {fileID: 0}
+  SetOnStart: 1
   B_alreadyStart: 0
   AffectedComponents: 1
   key: 
@@ -802,6 +803,7 @@ MonoBehaviour:
   m_Name: 
   m_EditorClassIdentifier: 
   LM: {fileID: 0}
+  SetOnStart: 1
   B_alreadyStart: 0
   AffectedComponents: 1
   key: 
@@ -875,13 +877,16 @@ MonoBehaviour:
   m_Script: {fileID: 11500000, guid: 50fb6fef992342346b978e2cbbb49e22, type: 3}
   m_Name: 
   m_EditorClassIdentifier: 
+  LanguagesFileName: Languages.csv
   currentsLanguages:
   - S_Name: English
-    S_FileName: English.strings
-  - S_Name: Italiano
-    S_FileName: Italiano.csv
+    S_FileName: 
   - S_Name: Spanish
-    S_FileName: Spanish.json
+    S_FileName: 
+  - S_Name: Italian
+    S_FileName: 
+  - S_Name: "New Language\r"
+    S_FileName: 
 --- !u!4 &832851642
 Transform:
   m_ObjectHideFlags: 0
@@ -1084,6 +1089,7 @@ MonoBehaviour:
   m_Name: 
   m_EditorClassIdentifier: 
   LM: {fileID: 0}
+  SetOnStart: 1
   B_alreadyStart: 0
   AffectedComponents: 0
   key: Menu_Title
@@ -1252,6 +1258,7 @@ MonoBehaviour:
   m_Name: 
   m_EditorClassIdentifier: 
   LM: {fileID: 0}
+  SetOnStart: 1
   B_alreadyStart: 0
   AffectedComponents: 3
   key: 
@@ -1357,6 +1364,7 @@ MonoBehaviour:
   m_Name: 
   m_EditorClassIdentifier: 
   LM: {fileID: 0}
+  SetOnStart: 1
   B_alreadyStart: 0
   AffectedComponents: 1
   key: Menu_Options
@@ -1436,7 +1444,7 @@ MonoBehaviour:
       - m_Target: {fileID: 1135594717}
         m_TargetAssemblyTypeName: ArthemyDevelopment.Localization.LocalizationObject,
           Assembly-CSharp
-        m_MethodName: ClearPlayerPrefKey
+        m_MethodName: ClearLanguageSelection
         m_Mode: 1
         m_Arguments:
           m_ObjectArgument: {fileID: 0}
@@ -1550,6 +1558,7 @@ MonoBehaviour:
   m_Name: 
   m_EditorClassIdentifier: 
   LM: {fileID: 0}
+  SetOnStart: 1
   B_alreadyStart: 0
   AffectedComponents: 1
   key: Menu_Continue
@@ -1704,6 +1713,7 @@ MonoBehaviour:
   m_Name: 
   m_EditorClassIdentifier: 
   LM: {fileID: 0}
+  SetOnStart: 1
   B_alreadyStart: 0
   AffectedComponents: 2
   key: Menu_Img
@@ -2153,6 +2163,7 @@ MonoBehaviour:
   m_Name: 
   m_EditorClassIdentifier: 
   LM: {fileID: 0}
+  SetOnStart: 1
   B_alreadyStart: 0
   AffectedComponents: 1
   key: Menu_Start
@@ -2391,6 +2402,7 @@ MonoBehaviour:
   m_Name: 
   m_EditorClassIdentifier: 
   LM: {fileID: 0}
+  SetOnStart: 1
   B_alreadyStart: 0
   AffectedComponents: 1
   key: 

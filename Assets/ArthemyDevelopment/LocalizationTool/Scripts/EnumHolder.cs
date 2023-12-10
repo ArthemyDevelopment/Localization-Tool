@@ -11,9 +11,9 @@ namespace ArthemyDevelopment.Localization
 
     public enum FileTypes
 	{
+        CSV,
         Json,
-        Strings,
-        CSV
+        //Strings,
 	}
 
     public enum AdvanceOptions

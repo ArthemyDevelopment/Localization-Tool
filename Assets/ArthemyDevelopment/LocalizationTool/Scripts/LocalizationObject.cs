@@ -18,6 +18,7 @@ namespace ArthemyDevelopment.Localization
         
         public LocalizationManager LM;
 
+        public bool SetOnStart = true;
         public bool B_alreadyStart;
 
         [Tooltip("Select the object to localize. \nIf the object is a button you will have access to advanced options. If the object is an image or a texture, the localization text in the file must be the name of the image inside the Resources folder.")]
@@ -57,15 +58,19 @@ namespace ArthemyDevelopment.Localization
         public ForCustomComponentClass ForCustomComponent;
 
 
-		private void Start()
+        private void Start()
 		{
             LM = LocalizationManager.current;
-            SetLocalizedObject();
+            if (SetOnStart)
+            {
+                SetLocalizedObject();
+            }
             B_alreadyStart = true;
 		}
 
 		void OnEnable()
         {
+            LM = LocalizationManager.current;
             if(B_alreadyStart)
                 SetLocalizedObject();
         }
@@ -86,28 +91,47 @@ namespace ArthemyDevelopment.Localization
                 PlayerPrefs.DeleteKey("CustomEventTrigger"+triggerIndex);
 		}
 
-        void SetLocalizedObject()
-		{
-           
+        public void SetLocalizedObject()
+        {
+            if (key == "" && !multipleStrings && advanceOptions!=AdvanceOptions.SetLanguage)
+                return;
+
+            if(LM==null)
+                LM = LocalizationManager.current;
             
             TMP_Text Text;
             switch (AffectedComponents)
-			{
+            {
                 case Components.Text:
-                        Text = GetComponent<TMP_Text>();
+                    Text = GetComponent<TMP_Text>();
+                    if(Text!=null)
                         Text.text = LM.GetLocalizationValue(key);
-                        break;
+                    else
+                    {
+                        Text text = GetComponent<Text>();
+                        text.text= LM.GetLocalizationValue(key);
+                    }
+                    break;
 
                 case Components.ButtonUI:
-                    
-                    switch(advanceOptions)
-					{
+
+                    switch (advanceOptions)
+                    {
                         case AdvanceOptions.SetLanguage:
+
                             Text = transform.GetChild(0).GetComponent<TMP_Text>();
-                            Text.text = LM.currentsLanguages[LocalizationIndex].S_Name;
+                            if(Text!=null)
+                                Text.text = LM.currentsLanguages[LocalizationIndex].S_Name;
+                            else
+                            {
+                                Text text = transform.GetChild(0).GetComponent<Text>();
+                                text.text = LM.currentsLanguages[LocalizationIndex].S_Name;
+                            }
+                            
                             Button tempBtn = GetComponent<Button>();
-                            tempBtn.onClick.AddListener(() => LM.LoadTextFile(LM.currentsLanguages[LocalizationIndex].S_FileName));
-                            tempBtn.onClick.AddListener(() => LM.SaveDefault(LocalizationIndex));
+                            tempBtn.onClick.AddListener(() =>
+                                LM.LoadTextFile(LM.LanguagesFileName, LocalizationIndex+1));
+                            tempBtn.onClick.AddListener(() => LM.SaveDefault(LocalizationIndex+1));
                             if (rememberConfiguration)
                             {
 
@@ -129,7 +153,7 @@ namespace ArthemyDevelopment.Localization
 
                                 tempBtn.onClick.AddListener(() => OnLanguageSelection.Invoke());
                             }
-                            
+
                             break;
 
                         case AdvanceOptions.CustomEvents:
@@ -138,44 +162,52 @@ namespace ArthemyDevelopment.Localization
                             Button tempBtn2 = GetComponent<Button>();
                             tempBtn2.onClick.AddListener(() => OnCustomEvent.Invoke());
                             tempBtn2.onClick.AddListener(() => LM.CustomEventTrigger(triggerIndex));
-                            if (triggerAutomatically && PlayerPrefs.HasKey("CustomEventTrigger"+triggerIndex))
+                            if (triggerAutomatically && PlayerPrefs.HasKey("CustomEventTrigger" + triggerIndex))
                             {
                                 OnCustomEvent.Invoke();
-                            }                           
+                            }
 
                             break;
 
                         case AdvanceOptions.none:
-                            Text = transform.GetChild(0).GetComponent<TMP_Text>();
-                            Text.text = LM.GetLocalizationValue(key);
+                            Text = transform.GetComponentInChildren<TMP_Text>();
+                            if(Text!=null)
+                                Text.text = LM.GetLocalizationValue(key);
+                            else
+                            {
+                                Text text = transform.GetChild(0).GetComponent<Text>();
+                                text.text = LM.GetLocalizationValue(key);
+                            }
+                           
                             break;
                     }
-                    
+
                     break;
 
                 case Components.Image:
                     Image _Image = GetComponent<Image>();
-                    _Image.sprite = Resources.Load<Sprite>(LM.GetLocalizationValue(key));                    
+                    _Image.sprite = Resources.Load<Sprite>(LM.GetLocalizationValue(key));
 
                     break;
 
                 case Components.CustomComponent:
-                                        
-                    if(!multipleStrings)
+
+                    if (!multipleStrings)
                         ForCustomComponent.Invoke(LM.GetLocalizationValue(key));
-                    else if(multipleStrings)
-					{                        
-						for (int i = 0; i < keys.Count; i++)
-						{
+                    else if (multipleStrings)
+                    {
+                        for (int i = 0; i < keys.Count; i++)
+                        {
                             ForCustomComponent.Invoke(LM.GetLocalizationValue(keys[i]));
-						}
-					}
+                        }
+                    }
+
                     break;
 
             }
 
         }
-
+        
     }
 
    

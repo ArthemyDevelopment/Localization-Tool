@@ -5,6 +5,7 @@ using UnityEditor;
 using UnityEditorInternal;
 using UnityEngine.Events;
 using System.IO;
+using UnityEditor.SceneManagement;
 
 namespace ArthemyDevelopment.Localization
 {
@@ -17,7 +18,7 @@ namespace ArthemyDevelopment.Localization
 
 		private void OnEnable()
 		{
-			LanguageList = new ReorderableList(serializedObject, serializedObject.FindProperty("currentsLanguages"), true, false, true, true);
+			LanguageList = new ReorderableList(serializedObject, serializedObject.FindProperty("currentsLanguages"), false, false, false, false);
 			LanguageList.headerHeight = 0;
 			LanguageList.onRemoveCallback += RemoveCallbacks;
 			LanguageList.drawElementCallback += OnDrawCallbacks;
@@ -35,18 +36,18 @@ namespace ArthemyDevelopment.Localization
 		{
 			var item = LanguageList.serializedProperty.GetArrayElementAtIndex(index);
 
-			Rect lableKey = new Rect(rect.x + 10, rect.y, 60, EditorGUIUtility.singleLineHeight);
-			Rect key = new Rect(rect.x + 60, rect.y, (EditorGUIUtility.currentViewWidth - 160 - 30) / 2, EditorGUIUtility.singleLineHeight);
-			Rect lableValue = new Rect(rect.x + ((EditorGUIUtility.currentViewWidth - 160 - 30) / 2) + 70, rect.y, 100, EditorGUIUtility.singleLineHeight);
-			Rect value = new Rect(rect.x + ((EditorGUIUtility.currentViewWidth - 160) / 2)+ 120, rect.y, (EditorGUIUtility.currentViewWidth - 160 - 30) / 2, EditorGUIUtility.singleLineHeight);
+			//Rect lableKey = new Rect(rect.x + 10, rect.y, 60, EditorGUIUtility.singleLineHeight);
+			Rect key = new Rect(rect.x + 20, rect.y, (EditorGUIUtility.currentViewWidth-55) , EditorGUIUtility.singleLineHeight);
+			Rect lableValue = new Rect(rect.x + ((EditorGUIUtility.currentViewWidth - 160 - 30) ) + 70, rect.y, 100, EditorGUIUtility.singleLineHeight);
+			//Rect value = new Rect(rect.x + ((EditorGUIUtility.currentViewWidth - 160) / 2)+ 120, rect.y, (EditorGUIUtility.currentViewWidth - 160 - 30) / 2, EditorGUIUtility.singleLineHeight);
 
 			EditorGUI.LabelField(rect, index.ToString() + " ");
 
-			EditorGUI.LabelField(lableKey, "Name ");
+			//EditorGUI.LabelField(lableKey, "Language ");
 			EditorGUI.PropertyField(key, item.FindPropertyRelative("S_Name"), GUIContent.none);			
 
-			EditorGUI.LabelField(lableValue, "File Name ");
-			EditorGUI.PropertyField(value, item.FindPropertyRelative("S_FileName"), GUIContent.none);
+			/*EditorGUI.LabelField(lableValue, "File Name ");
+			EditorGUI.PropertyField(value, item.FindPropertyRelative("S_FileName"), GUIContent.none);*/
 		}
 
 
@@ -84,11 +85,15 @@ namespace ArthemyDevelopment.Localization
 			EditorGUILayout.EndVertical();
 
 			EditorGUILayout.Space(5);
-
+			
+			EditorGUI.BeginDisabledGroup(true);
+			SerializedProperty LanguagesFileName = serializedObject.FindProperty("LanguagesFileName");
+			EditorGUILayout.PropertyField(LanguagesFileName, true );
+			EditorGUILayout.Space(5);
 			GUILayout.Label("Available Languages", EditorStyles.boldLabel);
 
 			LanguageList.DoLayoutList();
-
+			EditorGUI.EndDisabledGroup();
 			if(LanguageList.count == 0)
 			{
 				EditorGUILayout.HelpBox("At least 1 language file must exist in the language list, please add a new language", MessageType.Warning);
@@ -122,20 +127,54 @@ namespace ArthemyDevelopment.Localization
 					{
 						DefaultAsset asset = dragged as DefaultAsset;
 						LocalizationManager LM = target as LocalizationManager;
-						LanguageFile newLang = new LanguageFile();
-						newLang.S_Name = asset.name;
-						newLang.S_FileName = Path.GetFileName(AssetDatabase.GetAssetPath(asset));
-						if(LM.currentsLanguages == null)
+						string fileName = Path.GetFileName(AssetDatabase.GetAssetPath(asset));
+						LocalizationData localizationData= null;
+						LM.LanguagesFileName = fileName;
+						if (fileName.EndsWith(".json"))
 						{
-							LM.currentsLanguages = new List<LanguageFile>();
-							LM.currentsLanguages.Add(newLang);
+							string jsonData = File.ReadAllText(AssetDatabase.GetAssetPath(asset));
+							localizationData = JsonUtility.FromJson<LocalizationData>(jsonData);
 						}
-						else
-						{
-							LM.currentsLanguages.Add(newLang);
-						}
-							
 						
+						else if (fileName.EndsWith(".csv"))
+						{
+							List<LocalizationItem> localizedText = new List<LocalizationItem>();
+							string file= File.ReadAllText(AssetDatabase.GetAssetPath(asset));
+							string[] lines = file.Split('\n');
+							for (int i = 0; i < lines.Length; i++)
+							{
+								string[] data = lines[i].Split(';');
+								LocalizationItem tempItem = new LocalizationItem();
+						
+								for (int j = 0; j < data.Length; j++)
+								{
+									if (j == 0)
+									{
+										tempItem.key = data[j];
+										continue;
+									}
+									tempItem.value.Add(data[j]);
+							
+								}
+								localizedText.Add(tempItem);
+							}
+
+							localizationData = new LocalizationData();
+							localizationData.LI_Items = new LocalizationItem[localizedText.Count];
+							localizationData.LI_Items = localizedText.ToArray();
+						}
+						
+						LM.currentsLanguages = new List<LanguageFile>();
+						for (int i = 0; i < localizationData.LI_Items[0].value.Count; i++)
+						{
+							LanguageFile newLangTemp = new LanguageFile();
+							newLangTemp.S_Name = localizationData.LI_Items[0].value[i];
+							LM.currentsLanguages.Add(newLangTemp);
+						}
+						
+						EditorUtility.SetDirty(LM);
+						EditorSceneManager.MarkSceneDirty(LM.gameObject.scene);
+
 					}
 				}
 			}
